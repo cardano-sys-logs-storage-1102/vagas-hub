@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hub de Vagas — Leonardo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d1117;
+    --bg2:       #161b22;
+    --bg3:       #21262d;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #7d8590;
+    --accent:    #2f81f7;
+    --accent2:   #3fb950;
+    --alta:      #f85149;
+    --media:     #d29922;
+    --baixa:     #3fb950;
+    --r:         8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+         font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+  /* ── Header ── */
+  header { background: var(--bg2); border-bottom: 1px solid var(--border);
+           padding: 18px 32px; display: flex; align-items: center; gap: 16px; }
+  .logo { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent);
+          background: rgba(47,129,247,.12); padding: 4px 10px; border-radius: 4px;
+          border: 1px solid rgba(47,129,247,.25); letter-spacing: .04em; }
+  header h1 { font-size: 16px; font-weight: 500; flex: 1; }
+  .updated { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* ── Stats bar ── */
+  .stats { display: flex; gap: 12px; padding: 16px 32px; background: var(--bg2);
+           border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .stat { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+          padding: 10px 18px; display: flex; flex-direction: column; gap: 2px; min-width: 110px; }
+  .stat-n { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; }
+  .stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .stat-n.alta   { color: var(--alta); }
+  .stat-n.media  { color: var(--media); }
+  .stat-n.enviada{ color: var(--accent); }
+  .stat-n.total  { color: var(--text); }
+
+  /* ── Filters ── */
+  .filters { padding: 14px 32px; display: flex; gap: 10px; flex-wrap: wrap;
+             background: var(--bg); border-bottom: 1px solid var(--border); align-items: center; }
+  .filters input[type=text] {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 7px 12px; width: 220px; outline: none;
+    transition: border-color .15s;
+  }
+  .filters input[type=text]:focus { border-color: var(--accent); }
+  .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pill { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;
+          padding: 5px 12px; font-size: 12px; cursor: pointer; transition: all .15s;
+          color: var(--muted); white-space: nowrap; }
+  .pill:hover { border-color: var(--accent); color: var(--text); }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pill.p-alta.active   { background: var(--alta);   border-color: var(--alta); }
+  .pill.p-media.active  { background: var(--media);  border-color: var(--media); color: #000; }
+  .pill.p-baixa.active  { background: var(--baixa);  border-color: var(--baixa); color: #000; }
+  .sep { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; padding: 0 32px 32px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  thead th { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase;
+             letter-spacing: .06em; color: var(--muted); padding: 8px 12px;
+             border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; cursor: pointer; }
+  tbody tr:hover { background: var(--bg2); }
+  tbody tr.rejeitada-row { opacity: .4; }
+  tbody td { padding: 11px 12px; vertical-align: middle; }
+  td.td-titulo { max-width: 280px; }
+  td.td-titulo a { color: var(--text); text-decoration: none; font-weight: 500;
+                   display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.td-titulo a:hover { color: var(--accent); }
+  .empresa { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap;
+             overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+
+  /* badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px;
+           font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .badge.alta   { background: rgba(248,81,73,.15);  color: var(--alta);   border: 1px solid rgba(248,81,73,.3); }
+  .badge.media  { background: rgba(210,153,34,.15); color: var(--media);  border: 1px solid rgba(210,153,34,.3); }
+  .badge.baixa  { background: rgba(63,185,80,.15);  color: var(--baixa);  border: 1px solid rgba(63,185,80,.3); }
+  .badge.fonte  { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+  .badge.area   { background: rgba(47,129,247,.1); color: var(--accent); border: 1px solid rgba(47,129,247,.25); }
+
+  /* status buttons */
+  .status-btns { display: flex; gap: 4px; }
+  .sbtn { border: 1px solid var(--border); background: var(--bg3); border-radius: 6px;
+          padding: 4px 8px; font-size: 11px; cursor: pointer; color: var(--muted);
+          transition: all .15s; white-space: nowrap; }
+  .sbtn:hover { border-color: var(--muted); color: var(--text); }
+  .sbtn.v-on  { background: rgba(63,185,80,.15);  border-color: var(--baixa); color: var(--baixa); }
+  .sbtn.e-on  { background: rgba(47,129,247,.15); border-color: var(--accent); color: var(--accent); }
+  .sbtn.r-on  { background: rgba(248,81,73,.1);   border-color: var(--alta);  color: var(--alta); }
+
+  td.td-data { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* ── Empty state ── */
+  .empty { padding: 64px 32px; text-align: center; color: var(--muted); }
+  .empty h2 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+
+  /* ── Modal ── */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6);
+             display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+           width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+                  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .modal-header h2 { font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .close-btn { background: none; border: none; color: var(--muted); cursor: pointer;
+               font-size: 18px; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+  .close-btn:hover { background: var(--bg3); color: var(--text); }
+  .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .field a { color: var(--accent); font-size: 13px; word-break: break-all; }
+  .field p  { font-size: 13px; }
+  .field textarea {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 8px 12px; resize: vertical; min-height: 70px; outline: none;
+    transition: border-color .15s;
+  }
+  .field textarea:focus { border-color: var(--accent); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border);
+                  display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-save { background: var(--accent); border: none; border-radius: var(--r);
+              color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px;
+              font-weight: 500; padding: 8px 18px; cursor: pointer; transition: opacity .15s; }
+  .btn-save:hover { opacity: .85; }
+  .btn-cancel { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+                color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+                padding: 8px 18px; cursor: pointer; }
+
+  /* ── Loader ── */
+  .loader { display: flex; align-items: center; justify-content: center;
+            gap: 10px; padding: 80px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 13px; }
+  .spin { width: 20px; height: 20px; border: 2px solid var(--border);
+          border-top-color: var(--accent); border-radius: 50%;
+          animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    header, .stats, .filters, .table-wrap { padding-left: 16px; padding-right: 16px; }
+    .filters input[type=text] { width: 100%; }
+    .col-fonte, .col-local, .col-nivel { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">vagas.hub</span>
+  <h1>Monitor de Vagas — Oceanografia &amp; Dados</h1>
+  <span class="updated" id="updated">Carregando...</span>
+</header>
+
+<div class="stats" id="stats">
+  <div class="stat"><span class="stat-n total" id="s-total">—</span><span class="stat-l">Total</span></div>
+  <div class="stat"><span class="stat-n alta"   id="s-pend">—</span><span class="stat-l">Pendentes</span></div>
+  <div class="stat"><span class="stat-n" style="color:var(--baixa)" id="s-ver">—</span><span class="stat-l">Verificadas</span></div>
+  <div class="stat"><span class="stat-n enviada" id="s-env">—</span><span class="stat-l">Enviadas</span></div>
+  <div class="stat"><span class="stat-n alta"    id="s-alta">—</span><span class="stat-l">Prioridade Alta</span></div>
+</div>
+
+<div class="filters">
+  <input type="text" id="search" placeholder="Buscar título, empresa, área...">
+  <div class="sep"></div>
+  <div class="pill-group" id="filter-area"></div>
+  <div class="sep"></div>
+  <div class="pill-group">
+    <span class="pill p-alta"  onclick="togglePill(this,'prio','alta')">🔴 Alta</span>
+    <span class="pill p-media" onclick="togglePill(this,'prio','media')">🟡 Média</span>
+    <span class="pill p-baixa" onclick="togglePill(this,'prio','baixa')">🟢 Baixa</span>
+  </div>
+  <div class="sep"></div>
+  <div class="pill-group">
+    <span class="pill" onclick="togglePill(this,'status','pendente')">Pendente</span>
+    <span class="pill" onclick="togglePill(this,'status','verificado')">Verificado</span>
+    <span class="pill" onclick="togglePill(this,'status','enviado')">Enviado</span>
+    <span class="pill" onclick="togglePill(this,'status','rejeitado')">Rejeitado</span>
+  </div>
+  <div class="sep"></div>
+  <div class="pill-group">
+    <span class="pill" onclick="togglePill(this,'modal','Remoto')">Remoto</span>
+    <span class="pill" onclick="togglePill(this,'modal','Híbrido')">Híbrido</span>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <div class="loader" id="loader"><div class="spin"></div> Carregando vagas...</div>
+  <table id="tabela" style="display:none">
+    <thead>
+      <tr>
+        <th>Cargo</th>
+        <th>Área</th>
+        <th class="col-nivel">Nível</th>
+        <th class="col-local">Local</th>
+        <th class="col-fonte">Fonte</th>
+        <th>Prioridade</th>
+        <th>Status</th>
+        <th class="col-data">Data</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="empty" style="display:none">
+    <h2>Nenhuma vaga encontrada</h2>
+    <p>Tente ajustar os filtros acima.</p>
+  </div>
+</div>
+
+<!-- Modal de detalhes -->
+<div class="overlay" id="overlay" onclick="fecharModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="m-titulo"></h2>
+      <button class="close-btn" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="row2">
+        <div class="field"><label>Empresa</label><p id="m-empresa"></p></div>
+        <div class="field"><label>Área</label><p id="m-area"></p></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Local</label><p id="m-local"></p></div>
+        <div class="field"><label>Modalidade</label><p id="m-modalidade"></p></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Nível</label><p id="m-nivel"></p></div>
+        <div class="field"><label>Salário</label><p id="m-salario"></p></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Encontrada em</label><p id="m-data"></p></div>
+        <div class="field"><label>Prazo</label><p id="m-prazo"></p></div>
+      </div>
+      <div class="field"><label>Palavras-chave</label><p id="m-keywords"></p></div>
+      <div class="field"><label>Link</label><a id="m-link" target="_blank" rel="noopener"></a></div>
+      <div class="field"><label>Status</label>
+        <div class="status-btns">
+          <button class="sbtn" id="m-btn-v" onclick="setStatus('verificado')">✓ Verificado</button>
+          <button class="sbtn" id="m-btn-e" onclick="setStatus('enviado')">✈ Enviado</button>
+          <button class="sbtn" id="m-btn-r" onclick="setStatus('rejeitado')">✗ Rejeitado</button>
+          <button class="sbtn" id="m-btn-p" onclick="setStatus('pendente')">↺ Pendente</button>
+        </div>
+      </div>
+      <div class="field" id="m-envio-wrap" style="display:none">
+        <label>Data de envio</label><p id="m-data-envio"></p>
+      </div>
+      <div class="field"><label>Observações</label>
+        <textarea id="m-obs" placeholder="Anotações, contatos, próximos passos..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-save" onclick="salvarModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'vagas_status_v1';
+let VAGAS = [];
+let MODAL_ID = null;
+const filtros = { search:'', area: new Set(), prio: new Set(), status: new Set(), modal: new Set() };
+
+// ── Carregar dados ────────────────────────────────────────────────────────────
+async function carregar() {
+  try {
+    const r = await fetch('vagas.json?t=' + Date.now());
+    const dados = await r.json();
+    VAGAS = dados.vagas || [];
+    document.getElementById('updated').textContent =
+      'Atualizado: ' + (dados.ultima_atualizacao || '').replace('T',' ').slice(0,16);
+    aplicarStatusSalvos();
+    renderFiltrosArea();
+    renderTabela();
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('tabela').style.display = '';
+    atualizarStats();
+  } catch(e) {
+    document.getElementById('loader').innerHTML =
+      '<p style="color:var(--alta)">Erro ao carregar vagas.json. Verifique se o arquivo existe no repositório.</p>';
+  }
+}
+
+// ── Status persistido em localStorage ────────────────────────────────────────
+function carregarStatusSalvos() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function salvarStatusStorage() {
+  const obj = {};
+  VAGAS.forEach(v => { if (v.status !== 'pendente' || v.observacoes || v.data_envio)
+    obj[v.id] = { status: v.status, observacoes: v.observacoes, data_envio: v.data_envio };
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+}
+function aplicarStatusSalvos() {
+  const salvo = carregarStatusSalvos();
+  VAGAS.forEach(v => {
+    if (salvo[v.id]) {
+      v.status      = salvo[v.id].status      || 'pendente';
+      v.observacoes = salvo[v.id].observacoes  || '';
+      v.data_envio  = salvo[v.id].data_envio   || '';
+    } else {
+      v.status = v.status || 'pendente';
+      v.observacoes = v.observacoes || '';
+      v.data_envio  = v.data_envio  || '';
+    }
+  });
+}
+
+// ── Filtros ───────────────────────────────────────────────────────────────────
+function renderFiltrosArea() {
+  const areas = [...new Set(VAGAS.map(v => v.area))].sort();
+  const wrap = document.getElementById('filter-area');
+  wrap.innerHTML = areas.map(a =>
+    `<span class="pill" onclick="togglePill(this,'area','${a}')">${a}</span>`
+  ).join('');
+}
+
+function togglePill(el, tipo, valor) {
+  el.classList.toggle('active');
+  if (filtros[tipo].has(valor)) filtros[tipo].delete(valor);
+  else filtros[tipo].add(valor);
+  renderTabela();
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  filtros.search = e.target.value.toLowerCase();
+  renderTabela();
+});
+
+function visivelFiltros(v) {
+  if (filtros.search && !`${v.titulo} ${v.empresa} ${v.area} ${v.keywords}`.toLowerCase().includes(filtros.search)) return false;
+  if (filtros.area.size   && !filtros.area.has(v.area))       return false;
+  if (filtros.prio.size   && !filtros.prio.has(v.prioridade)) return false;
+  if (filtros.status.size && !filtros.status.has(v.status))   return false;
+  if (filtros.modal.size  && !filtros.modal.has(v.modalidade))return false;
+  return true;
+}
+
+// ── Render tabela ─────────────────────────────────────────────────────────────
+const prioBadge = { alta:'<span class="badge alta">Alta</span>', media:'<span class="badge media">Média</span>', baixa:'<span class="badge baixa">Baixa</span>' };
+
+function statusBtns(v) {
+  const vc = v.status==='verificado'?'v-on':'';
+  const ec = v.status==='enviado'?'e-on':'';
+  const rc = v.status==='rejeitado'?'r-on':'';
+  return `<div class="status-btns">
+    <button class="sbtn ${vc}" onclick="quickStatus(event,'${v.id}','verificado')">✓</button>
+    <button class="sbtn ${ec}" onclick="quickStatus(event,'${v.id}','enviado')">✈</button>
+    <button class="sbtn ${rc}" onclick="quickStatus(event,'${v.id}','rejeitado')">✗</button>
+  </div>`;
+}
+
+function renderTabela() {
+  const visivel = VAGAS.filter(visivelFiltros);
+  const tbody = document.getElementById('tbody');
+  document.getElementById('empty').style.display = visivel.length ? 'none' : '';
+
+  tbody.innerHTML = visivel.map(v => {
+    const rej = v.status === 'rejeitado' ? 'rejeitada-row' : '';
+    const data = v.data_achada ? v.data_achada.slice(0,10) : '';
+    return `<tr class="${rej}" onclick="abrirModal('${v.id}')">
+      <td class="td-titulo">
+        <a href="${v.link}" target="_blank" rel="noopener" onclick="e=>e.stopPropagation()">${v.titulo}</a>
+        <div class="empresa">${v.empresa}</div>
+      </td>
+      <td><span class="badge area">${v.area}</span></td>
+      <td class="col-nivel">${v.nivel||''}</td>
+      <td class="col-local" style="color:var(--muted);font-size:12px">${v.local||''}</td>
+      <td class="col-fonte"><span class="badge fonte">${v.fonte||''}</span></td>
+      <td>${prioBadge[v.prioridade]||''}</td>
+      <td onclick="event.stopPropagation()">${statusBtns(v)}</td>
+      <td class="td-data col-data">${data}</td>
+    </tr>`;
+  }).join('');
+
+  atualizarStats();
+}
+
+// ── Quick status (sem abrir modal) ────────────────────────────────────────────
+function quickStatus(event, id, novoStatus) {
+  event.stopPropagation();
+  const v = VAGAS.find(x => x.id === id);
+  if (!v) return;
+  v.status = v.status === novoStatus ? 'pendente' : novoStatus;
+  if (v.status === 'enviado' && !v.data_envio)
+    v.data_envio = new Date().toISOString().slice(0,10);
+  salvarStatusStorage();
+  renderTabela();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function atualizarStats() {
+  document.getElementById('s-total').textContent = VAGAS.length;
+  document.getElementById('s-pend').textContent  = VAGAS.filter(v=>v.status==='pendente').length;
+  document.getElementById('s-ver').textContent   = VAGAS.filter(v=>v.status==='verificado').length;
+  document.getElementById('s-env').textContent   = VAGAS.filter(v=>v.status==='enviado').length;
+  document.getElementById('s-alta').textContent  = VAGAS.filter(v=>v.prioridade==='alta').length;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function abrirModal(id) {
+  const v = VAGAS.find(x => x.id === id);
+  if (!v) return;
+  MODAL_ID = id;
+  document.getElementById('m-titulo').textContent    = v.titulo;
+  document.getElementById('m-empresa').textContent   = v.empresa;
+  document.getElementById('m-area').textContent      = v.area;
+  document.getElementById('m-local').textContent     = v.local;
+  document.getElementById('m-modalidade').textContent= v.modalidade;
+  document.getElementById('m-nivel').textContent     = v.nivel;
+  document.getElementById('m-salario').textContent   = v.salario || '—';
+  document.getElementById('m-data').textContent      = v.data_achada || '—';
+  document.getElementById('m-prazo').textContent     = v.prazo || '—';
+  document.getElementById('m-keywords').textContent  = v.keywords || '—';
+  const lk = document.getElementById('m-link');
+  lk.href = v.link; lk.textContent = v.link;
+  document.getElementById('m-obs').value = v.observacoes || '';
+  const envWrap = document.getElementById('m-envio-wrap');
+  if (v.data_envio) {
+    envWrap.style.display = '';
+    document.getElementById('m-data-envio').textContent = v.data_envio;
+  } else envWrap.style.display = 'none';
+  atualizarBotoesModal(v.status);
+  document.getElementById('overlay').classList.add('open');
+}
+
+function atualizarBotoesModal(status) {
+  ['v','e','r','p'].forEach(x => document.getElementById(`m-btn-${x}`).className = 'sbtn');
+  if (status === 'verificado') document.getElementById('m-btn-v').classList.add('v-on');
+  if (status === 'enviado')    document.getElementById('m-btn-e').classList.add('e-on');
+  if (status === 'rejeitado')  document.getElementById('m-btn-r').classList.add('r-on');
+}
+
+function setStatus(novoStatus) {
+  const v = VAGAS.find(x => x.id === MODAL_ID);
+  if (!v) return;
+  v.status = novoStatus;
+  if (novoStatus === 'enviado' && !v.data_envio)
+    v.data_envio = new Date().toISOString().slice(0,10);
+  const envWrap = document.getElementById('m-envio-wrap');
+  if (v.data_envio) {
+    envWrap.style.display = '';
+    document.getElementById('m-data-envio').textContent = v.data_envio;
+  }
+  atualizarBotoesModal(novoStatus);
+  salvarStatusStorage();
+  renderTabela();
+}
+
+function salvarModal() {
+  const v = VAGAS.find(x => x.id === MODAL_ID);
+  if (!v) return;
+  v.observacoes = document.getElementById('m-obs').value;
+  salvarStatusStorage();
+  fecharModal();
+  renderTabela();
+}
+
+function fecharModal(event) {
+  if (event && event.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('open');
+  MODAL_ID = null;
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+carregar();
+</script>
+</body>
+</html>
