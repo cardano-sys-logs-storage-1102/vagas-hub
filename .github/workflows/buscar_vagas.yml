@@ -1,0 +1,35 @@
+name: Busca de Vagas Diária
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 08h00 Brasília (UTC-3)
+  workflow_dispatch:         # permite rodar manualmente pelo GitHub
+
+jobs:
+  buscar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # necessário para o commit automático
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests beautifulsoup4
+
+      - name: Executar agente de busca
+        run: python buscar_vagas.py
+
+      - name: Commit e push do vagas.json atualizado
+        run: |
+          git config user.name  "Agente Vagas"
+          git config user.email "vagas-bot@users.noreply.github.com"
+          git add vagas.json
+          git diff --cached --quiet || git commit -m "vagas: atualização automática $(date +'%d/%m/%Y %H:%M') BRT"
+          git push
