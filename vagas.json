@@ -131439,8 +131439,28 @@
       "status": "pendente",
       "data_envio": "",
       "observacoes": ""
+    },
+    {
+      "id": "20261011163914068836_0",
+      "titulo": "Principal Operational Technology, Telemetry and SCADA Engineer",
+      "empresa": "NTT Global Data Centers",
+      "area": "Sensoriamento Remoto",
+      "fonte": "LinkedIn",
+      "local": "Estados Unidos",
+      "data_achada": "2026-10-11",
+      "prazo": "",
+      "nivel": "Sênior",
+      "modalidade": "Presencial",
+      "salario": "",
+      "link": "https://www.linkedin.com/jobs/view/principal-operational-technology-telemetry-and-scada-engineer-at-ntt-global-data-centers-4477232721",
+      "keywords": "Especialista em Sensoriamento Remoto",
+      "prioridade": "baixa",
+      "score": 1,
+      "status": "pendente",
+      "data_envio": "",
+      "observacoes": ""
     }
   ],
-  "ultima_atualizacao": "2026-10-10T16:14:07",
-  "total": 6572
+  "ultima_atualizacao": "2026-10-11T16:39:14",
+  "total": 6573
 }
